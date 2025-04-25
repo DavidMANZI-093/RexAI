@@ -5,24 +5,30 @@ import pygame
 from ai.networks.network import DinoNetwork # Import DinoNetwork class
 
 class AIController:
+    """
+    A class representing the AI controller for the Dino game using N.E.A.T.
+    This class manages the population of genomes, evaluates their performance,
+    and selects the best genomes for reproduction.
+    """
     def __init__(self, config_file):
+        """
+        Initializes the AIController with a N.E.A.T. configuration file.
+        - **config_file**: Path to the N.E.A.T. configuration file.
+        """
         # --- Loading N.E.A.T. configuration ---
-        config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
+        config = neat.Config(
+            neat.DefaultGenome,
+            neat.DefaultReproduction,
+            neat.DefaultSpeciesSet,
+            neat.DefaultStagnation,
+            config_file
+        )
         self.config = config
         
         # --- Creating initial population ---
         self.population = neat.Population(config)
         self.generation = 0
         self.networks = {} # Dictionary to store DinoNetwork objects, keyed by genome_id
-
-        # Initializing with more useful starting values
-        self.network_stats = {
-            "nodes_created": 0,
-            "connections_created": 0,
-            "mutations": 0,
-            "species_count": 1,  # Starting with at least 1 species
-            "best_fitness": 0
-        }
         
         # Tracking the initial structure size for proper delta calculation
         self._initial_node_count = sum(len(genome.nodes) for genome in self.population.population.values())
@@ -30,20 +36,13 @@ class AIController:
         self._previous_best_genome_id = None
 
     def reset(self):
-        """Resets the population to start with fresh genomes."""
+        """
+        Resets the population to start with fresh genomes.
+        """
         # Creating a new population with the same config
         self.population = neat.Population(self.config)
         self.generation = 0
         self.networks = {}  # Clearing any cached networks
-
-        # Resetting network stats
-        self.network_stats = {
-            "nodes_created": 0,
-            "connections_created": 0,
-            "mutations": 0,
-            "species_count": 1,
-            "best_fitness": 0
-        }
         
         # Resetting tracking variables
         self._initial_node_count = sum(len(genome.nodes) for genome in self.population.population.values())
@@ -51,38 +50,54 @@ class AIController:
         self._previous_best_genome_id = None
 
     def save_best_genome(self, filename="tests/best_genome.pkl"):
-        """Saves the best genome to a file."""
+        """
+        Saves the best genome to a file.
+        - **filename**: Path to the file where the genome will be saved.
+        """
         best_genome = self.get_best_genome()
         if best_genome:
             with open(filename, 'wb') as f:
                 pickle.dump(best_genome, f)
-            print(f"Best genome saved to {filename}")
+            print(f" - Best genome saved to {filename}")
         else:
-            print("No best genome to save")
+            print(" - No best genome to save")
 
     def save_population(self, filename="tests/population.pkl"):
-        """Saves the entire population to a file."""
+        """
+        Saves the entire population to a file.
+        - **filename**: Path to the file where the population will be saved.
+        """
         with open(filename, 'wb') as f:
             pickle.dump(self.population, f)
-        print(f"Population saved to {filename}")
+        print(f" - Population saved to {filename}")
 
     def load_best_genome(self, filename="tests/best_genome.pkl"):
-        """Loads the best genome from a file."""
+        """
+        Loads the best genome from a file.
+        - **filename**: Path to the file from which the genome will be loaded.
+        - **returns**: The loaded genome object or None if the file does not exist.
+        - **raises**: FileNotFoundError if the file does not exist.
+        """
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 best_genome = pickle.load(f)
-            print(f"Best genome loaded from {filename}")
+            print(f" - Best genome loaded from {filename}")
             return best_genome
         else:
             print(f"File {filename} not found")
             return None
 
     def load_population(self, filename="tests/population.pkl"):
-        """Loads a saved population."""
+        """
+        Loads a saved population.
+        - **filename**: Path to the file from which the population will be loaded.
+        - **returns**: True if the population was loaded successfully, False otherwise.
+        - **raises**: FileNotFoundError if the file does not exist.
+        """
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 self.population = pickle.load(f)
-            print(f"Population loaded from {filename}")
+            print(f" - Population loaded from {filename}")
             
             # Updating our tracking variables to match loaded population
             self._initial_node_count = sum(len(genome.nodes) for genome in self.population.population.values())
@@ -93,16 +108,15 @@ class AIController:
             
             return True
         else:
-            print(f"File {filename} not found")
+            print(f" - File {filename} not found")
             return False
     
     def get_action(self, sensor_data, genome_id):
-        """Decides Dino action using the N.E.A.T.-evolved neural network for the given genome.
-        Args:
-            sensor_data: A dictionary containing sensor data (distance, type_encoded, speed).
-            genome_id: The ID of the genome for which to get the action.
-        Returns:
-            A string representing the action: "jump", "duck", or "run"."""
+        """
+        Decides Dino action using the N.E.A.T.-evolved neural network for the given genome.
+        - **sensor_data**: A dictionary containing sensor data (distance, type_encoded, speed...).
+        - **genome_id**: The ID of the genome for which to get the action.
+        - **returns**: A string representing the action: "jump", "duck", or "run"."""
         if genome_id not in self.networks: # Creating DinoNetwork if not already created for this genome_id
             genome = self.population.population.get(genome_id)
             if genome:  # Making sure the genome exists
@@ -115,42 +129,65 @@ class AIController:
         return network.get_action(sensor_data) # Using DinoNetwork to get action based on sensor data
 
     def load_best_genome(self, filename="tests/best_genome.pkl"):
-        """Loads the best genome from a file."""
+        """
+        Loads the best genome from a file.
+        - **filename**: Path to the file from which the genome will be loaded.
+        - **returns**: The loaded genome object or None if the file does not exist.
+        - **raises**: FileNotFoundError if the file does not exist.
+        
+        **Note**: This method is used to load the best genome for evaluation or further training.
+        """
         import pickle
         import os
         
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 best_genome = pickle.load(f)
-            print(f"Best genome loaded from {filename}")
+            print(f" - Best genome loaded from {filename}")
             return best_genome
         else:
             print(f"File {filename} not found")
             return None
 
     def load_population(self, filename="tests/population.pkl"):
-        """Loads a saved population."""
+        """
+        Loads a saved population.
+        - **filename**: Path to the file from which the population will be loaded.
+        - **returns**: True if the population was loaded successfully, False otherwise.
+        - **raises**: FileNotFoundError if the file does not exist.
+        
+        **Note**: This method is used to load a previously saved population for further training or evaluation.
+        """
         import pickle
         import os
         
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 self.population = pickle.load(f)
-            print(f"Population loaded from {filename}")
+            print(f" - Population loaded from {filename}")
             return True
         else:
-            print(f"File {filename} not found")
+            print(f" - File {filename} not found")
             return False
     
     def evaluate_genomes(self, genomes, config):
-        """Fitness function for N.E.A.T. - evaluates the fitness of each genome.
-        For now, placeholder - fitness will be assigned externally in dino_game.py."""
+        """
+        Evaluates the genomes in the population using the provided configuration.
+        - **genomes**: A list of tuples (genome_id, genome) to be evaluated.
+        - **config**: The N.E.A.T. configuration object.
+        
+        **Note**: This method is used to evaluate the genomes based on their performance in the game.
+        """
         pass
 
     def run_generation(self):
-        """Runs one generation of the N.E.A.T. evolutionary algorithm."""
+        """
+        Runs one generation of the N.E.A.T. evolutionary algorithm.
+        
+        **Note**: This method is called to evolve the population by selecting the best genomes for reproduction.
+        """
         self.generation += 1
-        print(f"\n--- Generation {self.generation} ---")
+        print(f" - Generation {self.generation}")
 
         # Tracking network stats before reproduction
         prev_connections = sum(len(genome.connections) for genome in self.population.population.values())
@@ -172,7 +209,7 @@ class AIController:
         self.network_stats["mutations"] += 1  # Increment mutations counter each generation
         self.network_stats["species_count"] = curr_species
 
-        # Finding the best genome and update the best fitness
+        # Finding the best genome and updating the best fitness
         best_genome = None
         best_fitness = 0.0
         best_genome_id = None
@@ -194,7 +231,12 @@ class AIController:
             # We have a new best genome - this contributes to evolution progress
 
     def get_best_genome(self):
-        """Returns the best genome based on fitness."""
+        """
+        Returns the best genome based on fitness.
+        - **returns**: The genome with the highest fitness value.
+        
+        **Note**: This method is used to retrieve the best genome for evaluation or saving.
+        """
         best_genome = None
         best_fitness = -1
         
@@ -207,7 +249,16 @@ class AIController:
         return best_genome
 
     def draw_network_structure(self, screen, x, y, width, height):
-        """Draw a simplified visualization of the best network's structure."""
+        """
+        Draw a simplified visualization of the best network's structure.
+        - **screen**: The Pygame screen where the visualization will be drawn.
+        - **x**: The x-coordinate for the center of the visualization.
+        - **y**: The y-coordinate for the center of the visualization.
+        - **width**: The width of the visualization.
+        - **height**: The height of the visualization.
+        
+        **Note**: This method is used to visualize the best genome's structure for debugging or analysis.
+        """
         # Finding the best genome
         best_genome = self.get_best_genome()
         
@@ -227,11 +278,7 @@ class AIController:
             
         # Creating a surface for drawing
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        surface.fill((255, 255, 255, 180))  # Light gray background with transparency
-        # surface.fill((240, 240, 240, 180))  # Light gray background with transparency
-        
-        # Drawing a border around the visualization
-        # pygame.draw.rect(surface, (0, 0, 0), (0, 0, width, height), 1)
+        surface.fill((255, 255, 255))  # White background
         
         # Counting layers (input, hidden, output)
         input_nodes = []

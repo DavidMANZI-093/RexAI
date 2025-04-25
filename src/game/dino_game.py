@@ -32,17 +32,23 @@ def main():
 
     population_file = "tests/saved_population.pkl"
     if os.path.exists(population_file):
-        print(f"Loading population from {population_file}")
+        print(f" - Loading population from {population_file}")
         ai_controller.load_population(population_file)
-        print("Population loaded successfully!")
+        print(" - Population loaded successfully!")
     else:
-        print("No saved population found. Starting with fresh population.")
+        print(" - No saved population found. Starting with fresh population.")
 
     # --- Game Loop Variables ---
-    generation_count = 0 # Tracking generation number
+    generation_count = 1359 # Tracking generation number
 
     def run_dino_game_generation(genomes, config):
-        # Function runs a generation and evaluates fitness
+        """
+        Function to run a single generation of the Dino game.
+        This function initializes the game, spawns obstacles, and evaluates the fitness of each genome in the population.
+        It also handles the game loop, including user input, obstacle management, and rendering.
+        - **genomes**: List of genomes to evaluate.
+        - **config**: Configuration object for N.E.A.T.
+        """
         nonlocal generation_count # Allowing modification of generation_count from outer scope
         generation_count += 1
         dinos = {} # Dictionary to store Dino objects, keyed by genome_id
@@ -61,7 +67,7 @@ def main():
         obstacle_spawn_interval = 60 # Spawning new obstacle every 60 frames (Adjustable frequency)
 
         game_speed_base = 10 # Base game speed
-        game_speed_increment_interval = 7000 # Increasing speed every 500 frames
+        game_speed_increment_interval = 7500 # Increasing speed every 500 frames
         game_speed_increment_Amount = 0.5 # Amount to increase speed by
         current_game_speed = game_speed_base # Starting with base speed
         last_speed_increment_time = pygame.time.get_ticks() # Tracking last speed increment time
@@ -124,15 +130,6 @@ def main():
                         "dino_height": dino.rect.height,
                         "dino_state": 0 if dino.is_jumping else (1 if dino.is_ducking else 2) # 0: Jumping, 1: Ducking, 2: Running
                     }
-
-                    # sensor_data = { # Sensor data for each Dino
-                    #     "distance": normalized_distance,
-                    #     "type_encoded": next_obstacle_type_encoded,
-                    #     "speed": normalized_game_speed
-                    # }
-                    
-                    # Debug prints
-                    # print(f"Genome {genome_id} inputs: {sensor_data}")
                     
                     action = ai_controller.get_action(sensor_data, genome_id) # Getting action for THIS Dino's genome
 
@@ -241,40 +238,6 @@ def main():
             speed_rect = speed_surface.get_rect(topleft=(20, 80))
             screen.blit(speed_surface, speed_rect)
 
-            # # --- Displaying network stats in top-right corner ---
-            # net_stats = ai_controller.network_stats
-            # stats_x = SCREEN_WIDTH - 220  # Position for right-aligned text
-
-            # # Set up font for network stats (slightly smaller than game stats)
-            # net_font = pygame.font.SysFont("Consolas", 14, True)
-
-            # # Draw a semi-transparent background for the network stats
-            # stats_bg_rect = pygame.Rect(stats_x - 10, 15, 210, 105)
-            # stats_bg = pygame.Surface((210, 105), pygame.SRCALPHA)
-            # stats_bg.fill((230, 230, 255, 180))  # Light blue with transparency
-            # screen.blit(stats_bg, stats_bg_rect)
-
-            # # Network evolution stats
-            # net_title = "NETWORK EVOLUTION"
-            # net_title_surface = net_font.render(net_title, True, (0, 0, 100))
-            # screen.blit(net_title_surface, (stats_x, 20))
-
-            # nodes_text = f"Nodes Created: {net_stats['nodes_created']}"
-            # nodes_surface = net_font.render(nodes_text, True, (0, 0, 0))
-            # screen.blit(nodes_surface, (stats_x, 40))
-
-            # connections_text = f"Connections Created: {net_stats['connections_created']}"
-            # connections_surface = net_font.render(connections_text, True, (0, 0, 0))
-            # screen.blit(connections_surface, (stats_x, 60))
-
-            # mutations_text = f"Mutations: {net_stats['mutations']}"
-            # mutations_surface = net_font.render(mutations_text, True, (0, 0, 0))
-            # screen.blit(mutations_surface, (stats_x, 80))
-
-            # species_text = f"Species: {net_stats['species_count']}"
-            # species_surface = net_font.render(species_text, True, (0, 0, 0))
-            # screen.blit(species_surface, (stats_x, 100))
-
             ai_controller.draw_network_structure(screen, 650, 150, 280, 280)
             
             pygame.display.flip() # Updating the display
@@ -282,36 +245,43 @@ def main():
 
         # Adding checkpoint saving every X generations
         if generation_count % 10 == 0:  # Saving every 10 generations
-            print(f"Creating checkpoint at generation {generation_count}")
+            print(f" - Creating checkpoint at generation {generation_count}")
             ai_controller.save_population(f"tests/checkpoint_gen_{generation_count}.pkl")
 
         return # Generation loop finished
     
     # --- Main N.E.A.T. Evolution loop ---    
-    def eval_genomes(genomes, config): # Required signature for neat-python fitness function
+    def eval_genomes(genomes, config): # Required signature for neat-python fitness 
+        """
+        Function to evaluate genomes in the population.
+        This function is called by the N.E.A.T. library to evaluate the fitness of each genome.
+        It runs the Dino game for each genome, allowing the AI to control the Dino and evaluate its performance.
+        - **genomes**: List of genomes to evaluate.
+        - **config**: Configuration object for N.E.A.T.
+        """
         run_dino_game_generation(genomes, config) # Calling game loop function to evaluate genomes
 
     # --- Run N.E.A.T. Evolution ---
     try:
         # ai_controller.reset() # Resetting AI controller to start fresh
-        ai_controller.population.run(eval_genomes, n=100) # Running evolution for up to 1000 generations
+        ai_controller.population.run(eval_genomes, n=10) # Running evolution for up to 1000 generations
     except KeyboardInterrupt:
-        print("Evolution interrupted by user")
+        print(" - Evolution interrupted by user")
     finally:
         # Always save progress when finishing or interrupting
-        print("Saving final population...")
+        print(" - Saving final population...")
         ai_controller.save_population("tests/saved_population.pkl")
-        print("Population saved!")
+        print(" - Population saved!")
 
         # Saving the best genome separately
         best_genome = ai_controller.get_best_genome()
         if best_genome:
-            print("Saving best genome...")
+            print(" - Saving best genome...")
             ai_controller.save_best_genome("tests/best_genome.pkl")
-            print("Best genome saved!")
+            print(" - Best genome saved!")
 
     # Displaying the final best network structure before quitting
-    print("Displaying best network structure...")
+    print(" - Displaying best network structure...")
     screen.fill((255, 255, 255))
     ai_controller.draw_network_structure(screen, 400, 300, 600, 500)  # Center of screen, larger visualization
     
@@ -319,13 +289,6 @@ def main():
     font = pygame.font.SysFont("Consolas", 24, True)
     title = font.render("Final Best Network Structure", True, (0, 0, 0))
     screen.blit(title, (SCREEN_WIDTH // 2 - 160, 20))
-    
-    # Adding statistics
-    # stats_font = pygame.font.SysFont("Consolas", 16, True)
-    # best_fitness = ai_controller.network_stats["best_fitness"]
-    # fitness_text = f"Best Fitness: {best_fitness:.2f}"
-    # fitness_surface = stats_font.render(fitness_text, True, (0, 0, 0))
-    # screen.blit(fitness_surface, (SCREEN_WIDTH // 2 - 80, 80))
     
     pygame.display.flip()
     

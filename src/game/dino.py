@@ -1,7 +1,14 @@
 import pygame
 
 class Dino:
+    """
+    A class representing the Dino character in the game.
+    This class handles the loading of sprites, animations, and the Dino's state (running, jumping, ducking).
+    """
     def __init__(self):
+        """
+        Initializes the Dino class, loading sprites and setting initial attributes.
+        """
         # --- Loading Dino run sprites ---
         self.run_sprites = [
             pygame.image.load("assets/dino/rex_run_0.png"),
@@ -53,7 +60,9 @@ class Dino:
         self.original_rect_bottom = self.rect.bottom # Storing original bottom for ducking reset
         
     def update(self):
-        """ Updates Dino animation, jump, and ducking physics."""
+        """
+        Updates the Dino's position and animation based on its state.
+        """
         if self.is_jumping:
             self.update_jump()
         elif self.is_ducking:
@@ -105,6 +114,10 @@ class Dino:
             self.image = self.run_sprites[self.current_sprite_index]
     
     def draw(self, screen):
+        """
+        Draws the Dino on the screen at its current position.
+        - **screen**: The Pygame screen surface where the Dino will be drawn.
+        """
         screen.blit(self.image, self.rect) # Drawing the dino onto the screen
 
         # --- Drawing Green Rectangle around Dino ---

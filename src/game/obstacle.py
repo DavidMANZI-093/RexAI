@@ -3,7 +3,15 @@ import random
 import os  # For file path manipulation
 
 class Obstacle(pygame.sprite.Sprite):
+    """
+    A class representing an obstacle in the game.
+    This class handles the loading of obstacle images, their movement, and animation (if applicable).
+    """
     def __init__(self, obstacle_type):
+        """
+        Initializes the Obstacle class, loading images and setting initial attributes.
+        - **obstacle_type**: Type of obstacle (e.g., "cactus_small", "cactus_large", "bird"...).
+        """
         super().__init__()
 
         # Getting the base directory to properly resolve asset paths
