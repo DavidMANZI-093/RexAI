@@ -58,9 +58,6 @@ class AIController:
         if best_genome:
             with open(filename, 'wb') as f:
                 pickle.dump(best_genome, f)
-            print(f" - Best genome saved to {filename}")
-        else:
-            print(" - No best genome to save")
 
     def save_population(self, filename="tests/population.pkl"):
         """
@@ -69,7 +66,6 @@ class AIController:
         """
         with open(filename, 'wb') as f:
             pickle.dump(self.population, f)
-        print(f" - Population saved to {filename}")
 
     def load_best_genome(self, filename="tests/best_genome.pkl"):
         """
@@ -81,10 +77,8 @@ class AIController:
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 best_genome = pickle.load(f)
-            print(f" - Best genome loaded from {filename}")
             return best_genome
         else:
-            print(f"File {filename} not found")
             return None
 
     def load_population(self, filename="tests/population.pkl"):
@@ -97,7 +91,6 @@ class AIController:
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 self.population = pickle.load(f)
-            print(f" - Population loaded from {filename}")
             
             # Updating our tracking variables to match loaded population
             self._initial_node_count = sum(len(genome.nodes) for genome in self.population.population.values())
@@ -108,7 +101,6 @@ class AIController:
             
             return True
         else:
-            print(f" - File {filename} not found")
             return False
     
     def get_action(self, sensor_data, genome_id):
@@ -122,7 +114,6 @@ class AIController:
             if genome:  # Making sure the genome exists
                 self.networks[genome_id] = DinoNetwork(genome, self.config)
             else:
-                print(f"Warning: Genome {genome_id} not found in population")
                 return "run"  # Default action if genome not found
 
         network = self.networks[genome_id] # Getting DinoNetwork for this genome_id
@@ -143,10 +134,8 @@ class AIController:
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 best_genome = pickle.load(f)
-            print(f" - Best genome loaded from {filename}")
             return best_genome
         else:
-            print(f"File {filename} not found")
             return None
 
     def load_population(self, filename="tests/population.pkl"):
@@ -164,10 +153,8 @@ class AIController:
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 self.population = pickle.load(f)
-            print(f" - Population loaded from {filename}")
             return True
         else:
-            print(f" - File {filename} not found")
             return False
     
     def evaluate_genomes(self, genomes, config):
@@ -187,7 +174,6 @@ class AIController:
         **Note**: This method is called to evolve the population by selecting the best genomes for reproduction.
         """
         self.generation += 1
-        print(f" - Generation {self.generation}")
 
         # Tracking network stats before reproduction
         prev_connections = sum(len(genome.connections) for genome in self.population.population.values())

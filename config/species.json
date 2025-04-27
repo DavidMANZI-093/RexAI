@@ -1,0 +1,19 @@
+{
+    "species": [
+        {
+            "name": "Rex 1 g-0.20",
+            "best_genome_path": "./data/Rex 1 g-0.20/best_genome.pkl",
+            "best_population_path": "./data/Rex 1 g-0.20/best_population.pkl"
+        },
+        {
+            "name": "Rex 6 g-16.50",
+            "best_genome_path": "./data/Rex 6 g-16.50/best_genome.pkl",
+            "best_population_path": "./data/Rex 6 g-16.50/best_population.pkl"
+        },
+        {
+            "name": "Rex 7 g-20.0",
+            "best_genome_path": "./data/Rex 7 g-20.0/best_genome.pkl",
+            "best_population_path": "./data/Rex 7 g-20.0/best_population.pkl"
+        }
+    ]
+}
