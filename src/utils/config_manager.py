@@ -164,7 +164,7 @@ class ConfigManager:
         
         # If a species was selected, print confirmation
         if self.selected_species:
-            print(f"{Fore.GREEN}Selected species: {self.selected_species['name']}")
+            print(f"  - Selected species: {Fore.BLUE}'{self.selected_species['name']}'")
             
             # Validate paths exist
             self._validate_species_paths()
